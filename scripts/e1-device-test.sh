@@ -11,13 +11,15 @@ if [ "$result" -ne 0 ]; then
     done
 fi
 mkdir -p e1-screenshots
-adb pull /sdcard/Android/data/com.petex/files/e1/. e1-screenshots/
-pull_result=$?
-if [ "$result" -eq 0 ] && [ "$pull_result" -ne 0 ]; then
-    result=$pull_result
-fi
-if [ "$result" -eq 0 ] && [ "$(find e1-screenshots -name '*.png' | wc -l)" -ne 7 ]; then
-    echo '::error::Expected seven captured orb screenshots.'
-    result=1
-fi
+index=0
+for state in dormant attending listening thinking speaking acting alarmed; do
+    index=$((index + 1))
+    name="$index-$state.png"
+    adb exec-out run-as com.petex cat "files/e1/$name" > "e1-screenshots/$name"
+    if [ "$?" -ne 0 ] || [ ! -s "e1-screenshots/$name" ]; then
+        rm -f "e1-screenshots/$name"
+        echo "::error::Could not retrieve screenshot $name."
+        result=1
+    fi
+done
 exit "$result"

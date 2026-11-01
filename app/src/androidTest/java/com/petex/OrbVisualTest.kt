@@ -25,7 +25,7 @@ class OrbVisualTest {
     fun cycleAndCaptureEveryState() {
         val states = listOf("Dormant", "Attending", "Listening", "Thinking", "Speaking", "Acting", "Alarmed")
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val output = requireNotNull(context.getExternalFilesDir("e1"))
+        val output = File(context.filesDir, "e1").apply { check(isDirectory || mkdirs()) }
         states.forEachIndexed { index, state ->
             compose.onNodeWithContentDescription("Orb visual study: $state. Not connected to device activity.")
                 .assertExists()
