@@ -41,19 +41,7 @@ jobs:
           target: google_apis
           arch: x86_64
           disable-animations: true
-          script: |
-            set +e
-            ./gradlew :app:connectedDebugAndroidTest > e1-test.log 2>&1
-            result=$?
-            cat e1-test.log
-            if [ "$result" -ne 0 ]; then
-              tail -60 e1-test.log | while IFS= read -r line; do
-                echo "::error::$line"
-              done
-            fi
-            mkdir -p e1-screenshots
-            adb pull /sdcard/Android/data/com.petex/files/e1/. e1-screenshots/ || true
-            exit "$result"
+          script: ./scripts/e1-device-test.sh
       - name: Upload screenshots for manual review
         if: always()
         uses: actions/upload-artifact@v4
