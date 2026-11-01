@@ -1,1 +1,16 @@
 # Petex
+
+This repository currently contains an **E1-only Android visual study**, not a functioning assistant. A debug build lets you cycle through six standard orb states and Alarmed. The states are static illustrations: there is no live microphone, speech, messaging, verification, animation, or completed action behind them. The release build shows only a dormant orb placeholder.
+
+The experience specification was provided in the task, but `PETEX_BUILD.md`, `docs/MESSAGING_CONTROL.md`, `docs/PETEX_EXPERIENCE_SPEC.md`, and `AGENTS.md` were not present in the initial checkout. Phase 0 messaging is a priority and cannot be implemented or validated without its missing specification. See [experience phases](docs/EXPERIENCE_PHASES.md).
+
+## Build and check
+
+Requires JDK 17, Android SDK Platform 35, and access to the Gradle and Android/Google Maven repositories. Set `ANDROID_HOME` or provide `sdk.dir` in an untracked `local.properties`.
+
+```sh
+./gradlew :app:assembleDebug :app:testDebugUnitTest
+python3 -m unittest discover -s tests -v
+```
+
+Install `app/build/outputs/apk/debug/app-debug.apk` on an Android device or emulator. Use Previous/Next to inspect all seven visual states. Before E1 can pass, capture real screenshots or a recording and confirm rendering and colours on device. The Python checks are source-level guardrails only; they do not prove the Android app compiles or renders.
