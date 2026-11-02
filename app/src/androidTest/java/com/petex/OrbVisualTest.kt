@@ -30,7 +30,7 @@ class OrbVisualTest {
         compose.onNodeWithText("A little more room\nto think.").assertExists()
         compose.onNodeWithText("Voice is not available in this build").assertExists()
         saveScreenshot("0-room.png")
-        compose.onNodeWithText("DEVICE SNAPSHOT  ↗").performClick()
+        compose.onNodeWithText("DEVICE SNAPSHOT  ↗").performScrollTo().performClick()
         compose.onNodeWithText("Device snapshot").assertExists()
         compose.onNodeWithText("Available to apps").assertExists()
         saveScreenshot("8-snapshot.png")

@@ -6,9 +6,7 @@ set +e
 result=$?
 cat e1-test.log
 if [ "$result" -ne 0 ]; then
-    tail -60 e1-test.log | while IFS= read -r line; do
-        echo "::error::$line"
-    done
+    python3 -c 'from pathlib import Path; text="\n".join(Path("e1-test.log").read_text(errors="replace").splitlines()[-100:]); print("::error::" + text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A"))'
 fi
 mkdir -p e1-screenshots
 for name in 0-room.png 1-dormant.png 2-attending.png 3-listening.png 4-thinking.png 5-speaking.png 6-acting.png 7-alarmed.png 8-snapshot.png; do
