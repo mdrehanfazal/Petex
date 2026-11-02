@@ -19,7 +19,7 @@ import kotlin.math.sin
 
 /** Static E1 studies. Shapes do not imply microphone, speech, progress, or verification. */
 @Composable
-fun PetexOrb(state: OrbState, modifier: Modifier = Modifier) {
+fun PetexOrb(state: OrbState, modifier: Modifier = Modifier, visualStudy: Boolean = true) {
     val accent = when (state) {
         OrbState.Thinking -> PetexColors.Violet
         OrbState.Acting -> PetexColors.Amber
@@ -27,7 +27,8 @@ fun PetexOrb(state: OrbState, modifier: Modifier = Modifier) {
         else -> PetexColors.Cyan
     }
     Canvas(modifier = modifier.size(320.dp).semantics {
-        contentDescription = "Orb visual study: ${state.label}. Not connected to device activity."
+        contentDescription = if (visualStudy) "Orb visual study: ${state.label}. Not connected to device activity."
+        else "Orb: ${state.label}"
     }) {
         val center = Offset(size.width / 2, size.height / 2)
         val radius = 96.dp.toPx().coerceAtMost(size.minDimension * 0.32f)

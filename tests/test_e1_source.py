@@ -31,10 +31,11 @@ class E1SourceChecks(unittest.TestCase):
         for token in ("0.82f", "420f", "0.62f", "130f", "1.0f", "300f"):
             self.assertIn(token, tokens)
 
-    def test_visual_study_does_not_request_mic_permission(self):
+    def test_mic_requires_explicit_permission_and_debug_is_separate(self):
         manifest = (ROOT / "app/src/main/AndroidManifest.xml").read_text()
-        self.assertNotIn("RECORD_AUDIO", manifest)
+        self.assertIn("RECORD_AUDIO", manifest)
         activity = (SOURCE / "MainActivity.kt").read_text()
+        self.assertIn("permission.launch(Manifest.permission.RECORD_AUDIO)", activity)
         self.assertIn("BuildConfig.DEBUG", activity)
         self.assertIn("No microphone, speech or actions are active", activity)
 

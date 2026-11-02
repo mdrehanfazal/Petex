@@ -3,6 +3,7 @@ package com.petex.surface.intent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,28 +24,32 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.Role
+import com.petex.surface.orb.OrbState
+import com.petex.surface.voice.VoiceUiState
 import com.petex.surface.theme.PetexColors
 
-/** A non-interactive placeholder, never a microphone control. */
+/** Explicit tap-to-talk control; the phone speech service may use a network. */
 @Composable
-fun IntentBar(modifier: Modifier = Modifier) {
+fun IntentBar(voice: VoiceUiState, onTap: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween) {
             Text("YOUR INPUT", style = MaterialTheme.typography.labelMedium, color = PetexColors.TextDim)
-            Text("NOT CONNECTED", style = MaterialTheme.typography.labelMedium, color = PetexColors.TextDim)
+            Text(if (voice.orb == OrbState.Listening) "MICROPHONE LIVE" else "PUSH TO TALK", style = MaterialTheme.typography.labelMedium, color = PetexColors.TextDim)
         }
         Row(
             Modifier.fillMaxWidth().height(56.dp)
                 .background(PetexColors.Glass, RoundedCornerShape(999.dp))
                 .border(1.dp, PetexColors.Hairline, RoundedCornerShape(999.dp))
+                .clickable(role = Role.Button, onClick = onTap)
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Box(Modifier.size(36.dp).background(PetexColors.TextDim.copy(alpha = 0.1f), CircleShape),
                 contentAlignment = Alignment.Center) {
-                val iconColor = PetexColors.TextDim
+                val iconColor = if (voice.orb == OrbState.Listening) PetexColors.Cyan else PetexColors.TextDim
                 Canvas(Modifier.size(20.dp)) {
                     drawRoundRect(iconColor, topLeft = Offset(size.width * 0.35f, size.height * 0.08f),
                         size = Size(size.width * 0.3f, size.height * 0.5f),
@@ -56,8 +61,9 @@ fun IntentBar(modifier: Modifier = Modifier) {
                 }
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("Talk to Petex", style = MaterialTheme.typography.bodyMedium, color = PetexColors.TextPrimary)
-                Text("Voice is not available in this build", style = MaterialTheme.typography.labelMedium,
+                Text(if (voice.orb == OrbState.Listening) "Listening · tap to stop" else "Talk to Petex",
+                    style = MaterialTheme.typography.bodyMedium, color = PetexColors.TextPrimary)
+                Text("Time, battery, storage only", style = MaterialTheme.typography.labelMedium,
                     color = PetexColors.TextDim)
             }
         }

@@ -1,6 +1,13 @@
 package com.petex
 
 import android.os.Bundle
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -15,8 +22,11 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +44,8 @@ import com.petex.surface.orb.OrbState
 import com.petex.surface.orb.PetexOrb
 import com.petex.surface.room.TheRoom
 import com.petex.surface.diagnostics.DeviceSnapshotScreen
+import com.petex.surface.voice.VoiceController
+import com.petex.surface.voice.VoiceUiState
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.graphics.toArgb
 import com.petex.surface.theme.PetexColors
@@ -47,13 +59,52 @@ class MainActivity : ComponentActivity() {
         setContent {
             PetexTheme {
                 var page by remember { mutableStateOf("room") }
-                BackHandler(enabled = page != "room") { page = "room" }
+                var showVoiceDisclosure by remember { mutableStateOf(false) }
+                var voiceDisclosureAccepted by remember { mutableStateOf(false) }
+                var voiceState by remember { mutableStateOf(VoiceUiState()) }
+                val voice = remember { VoiceController(this@MainActivity) { voiceState = it } }
+                val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                    if (granted && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) && page == "room") voice.start()
+                    else if (!granted) voice.permissionDenied()
+                }
+                DisposableEffect(voice) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        if (event == Lifecycle.Event.ON_STOP) voice.stop()
+                    }
+                    lifecycle.addObserver(observer)
+                    onDispose { lifecycle.removeObserver(observer); voice.close() }
+                }
+                BackHandler(enabled = page != "room") { voice.stop(); page = "room" }
+                if (showVoiceDisclosure) {
+                    AlertDialog(
+                        onDismissRequest = { showVoiceDisclosure = false },
+                        title = { Text("Talk to Petex") },
+                        text = { Text("Your phone's speech recognition provider may send audio over the network. Petex listens only after you start. This build can answer the time, battery level, and available storage.") },
+                        confirmButton = { TextButton(onClick = {
+                            showVoiceDisclosure = false
+                            voiceDisclosureAccepted = true
+                            if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) voice.start()
+                            else permission.launch(Manifest.permission.RECORD_AUDIO)
+                        }) { Text("Continue") } },
+                        dismissButton = { TextButton(onClick = { showVoiceDisclosure = false }) { Text("Cancel") } },
+                        containerColor = PetexColors.Void,
+                        titleContentColor = PetexColors.TextPrimary,
+                        textContentColor = PetexColors.TextPrimary
+                    )
+                }
                 when (page) {
                     "orb" -> if (BuildConfig.DEBUG) OrbDebugScreen(onBack = { page = "room" })
                     "snapshot" -> DeviceSnapshotScreen(onBack = { page = "room" })
                     else -> TheRoom(
-                        showOrbStudy = if (BuildConfig.DEBUG) ({ page = "orb" }) else null,
-                        showDeviceSnapshot = { page = "snapshot" }
+                        voice = voiceState,
+                        onVoiceTap = {
+                            if (voiceState.orb == OrbState.Listening) voice.stop()
+                            else if (!voiceDisclosureAccepted) showVoiceDisclosure = true
+                            else if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) voice.start()
+                            else permission.launch(Manifest.permission.RECORD_AUDIO)
+                        },
+                        showOrbStudy = if (BuildConfig.DEBUG) ({ voice.stop(); page = "orb" }) else null,
+                        showDeviceSnapshot = { voice.stop(); page = "snapshot" }
                     )
                 }
             }

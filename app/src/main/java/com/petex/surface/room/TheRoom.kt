@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -27,30 +28,49 @@ import com.petex.surface.orb.OrbState
 import com.petex.surface.orb.PetexOrb
 import com.petex.surface.presence.PresenceStrip
 import com.petex.surface.theme.PetexColors
+import com.petex.surface.voice.VoiceUiState
 
-/** The early room is intentionally honest: no listening, no simulated conversation. */
+/** Explicit speech activation; no wake word or simulated conversation. */
 @Composable
-fun TheRoom(showOrbStudy: (() -> Unit)? = null, showDeviceSnapshot: () -> Unit) {
+fun TheRoom(voice: VoiceUiState, onVoiceTap: () -> Unit,
+    showOrbStudy: (() -> Unit)? = null, showDeviceSnapshot: () -> Unit) {
+    val scroll = rememberScrollState()
+    LaunchedEffect(voice.orb) { if (voice.orb == OrbState.Listening) scroll.scrollTo(0) }
     Column(
         Modifier.fillMaxSize().background(PetexColors.Void).padding(horizontal = 24.dp),
     ) {
         PresenceStrip(Modifier.fillMaxWidth().padding(top = 18.dp, bottom = 8.dp))
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             Column(
-                Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                Modifier.fillMaxWidth().verticalScroll(scroll, enabled = voice.orb != OrbState.Listening),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Text("A MORE THOUGHTFUL SPACE", style = MaterialTheme.typography.labelMedium,
                     color = PetexColors.TextDim, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(4.dp))
-                PetexOrb(OrbState.Dormant)
+                PetexOrb(voice.orb, visualStudy = false)
                 Text("A little more room\nto think.", style = MaterialTheme.typography.headlineMedium,
                     color = PetexColors.TextPrimary, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(14.dp))
-                Text("An early look at Petex. Voice and messaging are not connected yet.",
+                Text("Tap to talk. Your phone's speech provider may send audio over the network.",
                     modifier = Modifier.sizeIn(maxWidth = 290.dp), style = MaterialTheme.typography.bodyMedium,
                     color = PetexColors.TextDim, textAlign = TextAlign.Start)
+                voice.heard?.let {
+                    Spacer(Modifier.height(12.dp))
+                    Text("Heard: $it", modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodyMedium,
+                        color = PetexColors.TextDim)
+                }
+                voice.reply?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text(it, modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium,
+                        color = PetexColors.TextPrimary)
+                }
+                voice.notice?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text(it, modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodyMedium,
+                        color = PetexColors.TextDim)
+                }
                 Spacer(Modifier.height(16.dp))
                 Box(Modifier.sizeIn(minHeight = 48.dp).clickable(role = Role.Button, onClick = showDeviceSnapshot)
                     .padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
@@ -58,7 +78,7 @@ fun TheRoom(showOrbStudy: (() -> Unit)? = null, showDeviceSnapshot: () -> Unit) 
                 }
             }
         }
-        IntentBar(Modifier.fillMaxWidth())
+        IntentBar(voice, onVoiceTap, Modifier.fillMaxWidth())
         Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 16.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Text("DESIGNED TO BE QUIET", style = MaterialTheme.typography.labelMedium, color = PetexColors.TextDim)

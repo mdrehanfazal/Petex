@@ -28,7 +28,7 @@ class OrbVisualTest {
     fun cycleAndCaptureEveryState() {
         val states = listOf("Dormant", "Attending", "Listening", "Thinking", "Speaking", "Acting", "Alarmed")
         compose.onNodeWithText("A little more room\nto think.").assertExists()
-        compose.onNodeWithText("Voice is not available in this build").assertExists()
+        compose.onNodeWithText("Time, battery, storage only").assertExists()
         saveScreenshot("0-room.png")
         compose.onNodeWithText("DEVICE SNAPSHOT  ↗").performScrollTo().performClick()
         compose.onNodeWithText("Device snapshot").assertExists()
