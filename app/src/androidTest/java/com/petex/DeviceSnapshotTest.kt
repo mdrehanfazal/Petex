@@ -3,7 +3,6 @@ package com.petex
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.petex.surface.diagnostics.captureDeviceSnapshot
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,10 +14,10 @@ class DeviceSnapshotTest {
         val snapshot = captureDeviceSnapshot(context)
         assertTrue(snapshot.capturedAt > 0)
         snapshot.batteryPercent?.let { assertTrue(it in 0..100) }
-        assertNotNull(snapshot.availableBytes)
-        assertNotNull(snapshot.totalBytes)
-        assertTrue(snapshot.availableBytes!! >= 0)
-        assertTrue(snapshot.totalBytes!! > 0)
-        assertTrue(snapshot.availableBytes <= snapshot.totalBytes)
+        val available = requireNotNull(snapshot.availableBytes)
+        val total = requireNotNull(snapshot.totalBytes)
+        assertTrue(available >= 0)
+        assertTrue(total > 0)
+        assertTrue(available <= total)
     }
 }
