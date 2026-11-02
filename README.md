@@ -16,3 +16,7 @@ python3 -m unittest discover -s tests -v
 Install `app/build/outputs/apk/debug/app-debug.apk` on an Android device or emulator. Use Previous/Next to inspect all seven visual states. Before E1 can pass, capture real screenshots or a recording and confirm rendering and colours on device. The Python checks are source-level guardrails only; they do not prove the Android app compiles or renders.
 
 The `Android E1 validation` workflow runs the JVM tests and, on an Android emulator, cycles the debug selector in both directions and captures all seven states. If the workflow runs successfully, download its `e1-device-screenshots` artifact for manual review; merely adding the workflow is not proof of a successful build or visual acceptance. To run the device test locally, start an emulator and run `./gradlew :app:connectedDebugAndroidTest`; screenshots are saved on the device under `Pictures/PetexE1/` and can be retrieved with `adb pull /sdcard/Pictures/PetexE1/`.
+
+## Install the debug visual study
+
+On an Android 8.0 (API 26) or newer phone, download the `petex-debug-apk` artifact from a successful **Android E1 validation** run in GitHub Actions (you may need to sign in to GitHub). Extract the ZIP and open `app-debug.apk` on the phone. Android may ask you to allow installs from the browser or file manager; allow it only if you trust the APK, then disable that permission again after installing. This is a debug build for testing, not the full Petex assistant.
