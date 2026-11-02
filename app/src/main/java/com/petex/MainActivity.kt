@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.petex.surface.orb.OrbState
 import com.petex.surface.orb.PetexOrb
 import com.petex.surface.room.TheRoom
+import com.petex.surface.diagnostics.DeviceSnapshotScreen
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.graphics.toArgb
 import com.petex.surface.theme.PetexColors
@@ -45,12 +46,15 @@ class MainActivity : ComponentActivity() {
         window.navigationBarColor = PetexColors.Void.toArgb()
         setContent {
             PetexTheme {
-                var showStudy by remember { mutableStateOf(false) }
-                BackHandler(enabled = showStudy) { showStudy = false }
-                if (BuildConfig.DEBUG && showStudy) {
-                    OrbDebugScreen(onBack = { showStudy = false })
-                } else {
-                    TheRoom(showOrbStudy = if (BuildConfig.DEBUG) ({ showStudy = true }) else null)
+                var page by remember { mutableStateOf("room") }
+                BackHandler(enabled = page != "room") { page = "room" }
+                when (page) {
+                    "orb" -> if (BuildConfig.DEBUG) OrbDebugScreen(onBack = { page = "room" })
+                    "snapshot" -> DeviceSnapshotScreen(onBack = { page = "room" })
+                    else -> TheRoom(
+                        showOrbStudy = if (BuildConfig.DEBUG) ({ page = "orb" }) else null,
+                        showDeviceSnapshot = { page = "snapshot" }
+                    )
                 }
             }
         }

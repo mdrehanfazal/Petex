@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
@@ -29,6 +30,12 @@ class OrbVisualTest {
         compose.onNodeWithText("A little more room\nto think.").assertExists()
         compose.onNodeWithText("Voice is not available in this build").assertExists()
         saveScreenshot("0-room.png")
+        compose.onNodeWithText("DEVICE SNAPSHOT  ↗").performClick()
+        compose.onNodeWithText("Device snapshot").assertExists()
+        compose.onNodeWithText("Available to apps").assertExists()
+        saveScreenshot("8-snapshot.png")
+        compose.onNodeWithText("REFRESH READINGS").performScrollTo().performClick()
+        compose.onNodeWithText("← ROOM").performScrollTo().performClick()
         compose.onNodeWithText("ORB STATES  ↗").performClick()
         states.forEachIndexed { index, state ->
             compose.onNodeWithContentDescription("Orb visual study: $state. Not connected to device activity.")

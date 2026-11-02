@@ -30,7 +30,7 @@ import com.petex.surface.theme.PetexColors
 
 /** The early room is intentionally honest: no listening, no simulated conversation. */
 @Composable
-fun TheRoom(showOrbStudy: (() -> Unit)? = null) {
+fun TheRoom(showOrbStudy: (() -> Unit)? = null, showDeviceSnapshot: () -> Unit) {
     Column(
         Modifier.fillMaxSize().background(PetexColors.Void).padding(horizontal = 24.dp),
     ) {
@@ -48,9 +48,14 @@ fun TheRoom(showOrbStudy: (() -> Unit)? = null) {
                 Text("A little more room\nto think.", style = MaterialTheme.typography.headlineMedium,
                     color = PetexColors.TextPrimary, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(14.dp))
-                Text("An early look at Petex. Voice and actions are not connected yet.",
+                Text("An early look at Petex. Voice and messaging are not connected yet.",
                     modifier = Modifier.sizeIn(maxWidth = 290.dp), style = MaterialTheme.typography.bodyMedium,
                     color = PetexColors.TextDim, textAlign = TextAlign.Start)
+                Spacer(Modifier.height(16.dp))
+                Box(Modifier.sizeIn(minHeight = 48.dp).clickable(role = Role.Button, onClick = showDeviceSnapshot)
+                    .padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
+                    Text("DEVICE SNAPSHOT  ↗", style = MaterialTheme.typography.labelMedium, color = PetexColors.Cyan)
+                }
             }
         }
         IntentBar(Modifier.fillMaxWidth())
