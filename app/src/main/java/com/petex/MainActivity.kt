@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -31,25 +32,33 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.petex.surface.orb.OrbState
 import com.petex.surface.orb.PetexOrb
+import com.petex.surface.room.TheRoom
+import androidx.activity.compose.BackHandler
+import androidx.compose.ui.graphics.toArgb
 import com.petex.surface.theme.PetexColors
 import com.petex.surface.theme.PetexTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { PetexTheme { if (BuildConfig.DEBUG) OrbDebugScreen() else OrbPlaceholder() } }
+        window.statusBarColor = PetexColors.Void.toArgb()
+        window.navigationBarColor = PetexColors.Void.toArgb()
+        setContent {
+            PetexTheme {
+                var showStudy by remember { mutableStateOf(false) }
+                BackHandler(enabled = showStudy) { showStudy = false }
+                if (BuildConfig.DEBUG && showStudy) {
+                    OrbDebugScreen(onBack = { showStudy = false })
+                } else {
+                    TheRoom(showOrbStudy = if (BuildConfig.DEBUG) ({ showStudy = true }) else null)
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun OrbPlaceholder() {
-    Box(Modifier.fillMaxSize().background(PetexColors.Void), contentAlignment = Alignment.Center) {
-        PetexOrb(OrbState.Dormant)
-    }
-}
-
-@Composable
-private fun OrbDebugScreen() {
+private fun OrbDebugScreen(onBack: () -> Unit) {
     var index by remember { mutableIntStateOf(0) }
     val states = OrbState.all
     Column(
@@ -64,6 +73,7 @@ private fun OrbDebugScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        DebugControl("Back to room", onBack)
         Text("PETEX / E1 VISUAL STUDY", style = MaterialTheme.typography.labelMedium, color = PetexColors.TextDim)
         PetexOrb(states[index])
         Text(states[index].label, style = MaterialTheme.typography.headlineMedium, color = PetexColors.TextPrimary)

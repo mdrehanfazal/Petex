@@ -26,27 +26,35 @@ class OrbVisualTest {
     @Test
     fun cycleAndCaptureEveryState() {
         val states = listOf("Dormant", "Attending", "Listening", "Thinking", "Speaking", "Acting", "Alarmed")
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        compose.onNodeWithText("A little more room\nto think.").assertExists()
+        compose.onNodeWithText("Voice is not available in this build").assertExists()
+        saveScreenshot("0-room.png")
+        compose.onNodeWithText("ORB STATES  ↗").performClick()
         states.forEachIndexed { index, state ->
             compose.onNodeWithContentDescription("Orb visual study: $state. Not connected to device activity.")
                 .assertExists()
             compose.onNodeWithText(state).assertExists()
-            val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
-            // MediaStore keeps the evidence even if Gradle uninstalls the test app.
-            val values = ContentValues().apply {
-                put(MediaStore.Images.Media.DISPLAY_NAME, "${index + 1}-${state.lowercase()}.png")
-                put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/PetexE1")
-            }
-            val resolver = context.contentResolver
-            val uri = requireNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values))
-            requireNotNull(resolver.openOutputStream(uri)).use {
-                check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
-            }
+            saveScreenshot("${index + 1}-${state.lowercase()}.png")
             compose.onNodeWithText("NEXT").performClick()
         }
         compose.onNodeWithText("Dormant").assertExists()
         compose.onNodeWithText("PREVIOUS").performClick()
         compose.onNodeWithText("Alarmed").assertExists()
     }
+
+    private fun saveScreenshot(name: String) {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, name)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+            put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/PetexE1")
+        }
+        val resolver = context.contentResolver
+        val uri = requireNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values))
+        requireNotNull(resolver.openOutputStream(uri)).use {
+            check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
+        }
+    }
+
 }
