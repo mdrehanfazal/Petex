@@ -15,8 +15,8 @@ index=0
 for state in dormant attending listening thinking speaking acting alarmed; do
     index=$((index + 1))
     name="$index-$state.png"
-    adb exec-out run-as com.petex cat "files/e1/$name" > "e1-screenshots/$name"
-    if [ "$?" -ne 0 ] || [ ! -s "e1-screenshots/$name" ]; then
+    adb exec-out cat "/sdcard/Pictures/PetexE1/$name" > "e1-screenshots/$name"
+    if [ "$?" -ne 0 ] || [ "$(head -c 8 "e1-screenshots/$name" | od -An -tx1 | tr -d " \n")" != "89504e470d0a1a0a" ]; then
         rm -f "e1-screenshots/$name"
         echo "::error::Could not retrieve screenshot $name."
         result=1
